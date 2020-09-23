@@ -12,7 +12,6 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -69,7 +68,6 @@ public class ExcelGenerationServiceImpl implements ExcelGenerationService {
 
         for (ExcelDataSheet sheetData : data.getSheets()) {
             Sheet sheet = workbook.createSheet(sheetData.getTitle());
-
             Row header = sheet.createRow(0);
             List<ExcelDataHeader> headersData = sheetData.getHeaders();
             for (int i = 0; i < headersData.size(); i++) {
@@ -104,7 +102,8 @@ public class ExcelGenerationServiceImpl implements ExcelGenerationService {
 
         File currDir = new File(".");
         String path = currDir.getAbsolutePath();
-        String fileLocation = path.substring(0, path.length() - 1) + "temp.xlsx";  // TODO : file name cannot be hardcoded here
+        String fileLocation = path.substring(0, path.length() - 1) + data.getFileName();
+
 
         FileOutputStream outputStream = new FileOutputStream(fileLocation);
         workbook.write(outputStream);

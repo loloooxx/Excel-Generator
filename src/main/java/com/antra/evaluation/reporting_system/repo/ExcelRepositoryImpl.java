@@ -4,6 +4,7 @@ import com.antra.evaluation.reporting_system.pojo.report.ExcelFile;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,17 +21,29 @@ public class ExcelRepositoryImpl implements ExcelRepository {
 
     @Override
     public ExcelFile saveFile(ExcelFile file) {
-        return null;
+        excelData.put(file.getFileId(), file);
+        return file;
     }
 
     @Override
     public ExcelFile deleteFile(String id) {
-        return null;
+        if (!excelData.containsKey((id))) {
+            throw new RuntimeException("No such file id exists.");
+        }
+
+        ExcelFile file = excelData.get(id);
+        excelData.remove(id);
+
+        return file;
     }
 
     @Override
     public List<ExcelFile> getFiles() {
-        return null;
+        List<ExcelFile> fileList = new ArrayList<>();
+        for (ExcelFile file : excelData.values()) {
+            fileList.add(file);
+        }
+        return fileList;
     }
 }
 

@@ -3,6 +3,8 @@ package com.antra.evaluation.reporting_system.endpoint;
 import com.antra.evaluation.reporting_system.pojo.api.ExcelRequest;
 import com.antra.evaluation.reporting_system.pojo.api.ExcelResponse;
 import com.antra.evaluation.reporting_system.pojo.api.MultiSheetExcelRequest;
+import com.antra.evaluation.reporting_system.pojo.report.ExcelData;
+import com.antra.evaluation.reporting_system.pojo.report.ExcelFile;
 import com.antra.evaluation.reporting_system.service.ExcelService;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -35,22 +37,32 @@ public class ExcelGenerationController {
     @PostMapping("/excel")
     @ApiOperation("Generate Excel")
     public ResponseEntity<ExcelResponse> createExcel(@RequestBody @Validated ExcelRequest request) {
+        String id = excelService.generateExcelFile(request);
         ExcelResponse response = new ExcelResponse();
+        response.setFileId(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/excel/auto")
     @ApiOperation("Generate Multi-Sheet Excel Using Split field")
     public ResponseEntity<ExcelResponse> createMultiSheetExcel(@RequestBody @Validated MultiSheetExcelRequest request) {
+        String id = excelService.generateMultiSheetExcel(request);
         ExcelResponse response = new ExcelResponse();
-
+        response.setFileId(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/excel")
     @ApiOperation("List all existing files")
     public ResponseEntity<List<ExcelResponse>> listExcels() {
+        List<ExcelFile> files = excelService.listExcelFiles();
         var response = new ArrayList<ExcelResponse>();
+
+        for (ExcelFile file : files) {
+            ExcelResponse res = new ExcelResponse();
+            res.setFileId(file.getFileId());
+            response.add(res);
+        }
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -58,17 +70,18 @@ public class ExcelGenerationController {
     @GetMapping("/excel/{id}/content")
     public void downloadExcel(@PathVariable String id, HttpServletResponse response) throws IOException {
         InputStream fis = excelService.getExcelBodyById(id);
+        ExcelData data = excelService.getExcelDataById(id);
         response.setHeader("Content-Type","application/vnd.ms-excel");
-        response.setHeader("Content-Disposition","attachment; filename=\"name_of_excel_file.xls\""); // TODO: File name cannot be hardcoded here
+        response.setHeader("Content-Disposition","attachment; filename=\"" + data.getFileName() + "\"");
         FileCopyUtils.copy(fis, response.getOutputStream());
     }
 
     @DeleteMapping("/excel/{id}")
     public ResponseEntity<ExcelResponse> deleteExcel(@PathVariable String id) {
+        excelService.deleteExcelFile(id);
         var response = new ExcelResponse();
+        response.setFileId(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
-// Log
-// Exception handling
-// Validation
+
