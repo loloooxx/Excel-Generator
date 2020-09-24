@@ -18,12 +18,13 @@ import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class ExcelServiceImpl implements ExcelService {
 
     private static int HEADER_WIDTH = 10;
-    private static int fileId = 0;
+    private final static AtomicInteger counter = new AtomicInteger();
 
     @Autowired
     ExcelRepository excelRepository;
@@ -31,12 +32,12 @@ public class ExcelServiceImpl implements ExcelService {
     @Autowired
     ExcelGenerationService excelGenerationService;
 
+
     @Override
     public String generateExcelFile(ExcelRequest request) {
         ExcelData excelData = convertExcelRequestToExcelData(request);
         ExcelFile excelFile = new ExcelFile();
-        fileId += 1;
-        String id = String.valueOf(fileId);
+        String id = String.valueOf(counter.incrementAndGet());
         excelData.setFileId(id);
         excelData.setGeneratedTime(LocalDateTime.now());
         excelFile.setFileId(id);
@@ -49,8 +50,7 @@ public class ExcelServiceImpl implements ExcelService {
     public String generateMultiSheetExcel(MultiSheetExcelRequest request) {
         ExcelData excelData = convertMultiSheetExcelRequestToExcelData(request);
         ExcelFile excelFile = new ExcelFile();
-        fileId += 1;
-        String id = String.valueOf(fileId);
+        String id = String.valueOf(counter.incrementAndGet());
         excelData.setFileId(id);
         excelData.setGeneratedTime(LocalDateTime.now());
         excelFile.setFileId(id);
@@ -139,26 +139,28 @@ public class ExcelServiceImpl implements ExcelService {
     public InputStream getExcelBodyById(String id) {
         Optional<ExcelFile> fileInfo = excelRepository.getFileById(id);
 
-        if (fileInfo.isPresent()) {
-            try {
-                File file = excelGenerationService.generateExcelReport(fileInfo.get().getExcelData());
-                return new FileInputStream(file);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (fileInfo.isEmpty()) {
+            throw new RuntimeException("No such file id exists.");
         }
 
+        try {
+            File file = excelGenerationService.generateExcelReport(fileInfo.get().getExcelData());
+            return new FileInputStream(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
     @Override
     public ExcelData getExcelDataById(String id) {
         Optional<ExcelFile> fileInfo = excelRepository.getFileById(id);
-        if (fileInfo.isPresent()) {
-            return fileInfo.get().getExcelData();
+
+        if (fileInfo.isEmpty()) {
+            throw new RuntimeException("No such file id exists.");
         }
 
-        return null;
+        return fileInfo.get().getExcelData();
     }
 
     @Override

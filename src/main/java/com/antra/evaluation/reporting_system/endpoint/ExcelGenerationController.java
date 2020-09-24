@@ -40,6 +40,7 @@ public class ExcelGenerationController {
         String id = excelService.generateExcelFile(request);
         ExcelResponse response = new ExcelResponse();
         response.setFileId(id);
+        log.info("Generate an excel file successfully, file id is {}.", id);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -49,6 +50,7 @@ public class ExcelGenerationController {
         String id = excelService.generateMultiSheetExcel(request);
         ExcelResponse response = new ExcelResponse();
         response.setFileId(id);
+        log.info("Generate a multi-sheet excel file successfully, file id is {}.", id);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -64,6 +66,7 @@ public class ExcelGenerationController {
             response.add(res);
         }
 
+        log.info("List all the excel files successfully");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -74,6 +77,7 @@ public class ExcelGenerationController {
         response.setHeader("Content-Type","application/vnd.ms-excel");
         response.setHeader("Content-Disposition","attachment; filename=\"" + data.getFileName() + "\"");
         FileCopyUtils.copy(fis, response.getOutputStream());
+        log.info("Download an excel file successfully, file id is {}.", id);
     }
 
     @DeleteMapping("/excel/{id}")
@@ -81,6 +85,7 @@ public class ExcelGenerationController {
         excelService.deleteExcelFile(id);
         var response = new ExcelResponse();
         response.setFileId(id);
+        log.info("Delete an excel file successfully, file id is {}.", id);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

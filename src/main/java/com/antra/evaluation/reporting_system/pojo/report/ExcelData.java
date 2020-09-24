@@ -26,6 +26,7 @@ public class ExcelData {
     public void setFileName(String fileName) {
         if (fileName.length() < 20) {
             this.fileName = fileName + FILENAME_EXTENNSION;
+            return;
         }
         this.fileName = fileName.substring(0, 17) + "..." + FILENAME_EXTENNSION;
     }
